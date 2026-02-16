@@ -46,28 +46,39 @@ input_data = pd.DataFrame([{
     'cooc_max': cooc_max
 }])
 
+
 if st.button("Recommend Products"):
-    probs = np.array([
-        models[label].predict_proba(input_data)[:, 1][0]
-        for label in product_cols
-    ])
 
-top5_idx = np.argsort(-probs)[:5]
-top5 = [(product_cols[i], probs[i]) for i in top5_idx]
+    try:
+        # Generate probabilities for each product
+        probs = np.array([
+            models[label].predict_proba(input_data)[:, 1][0]
+            for label in product_cols
+        ])
 
-st.subheader("Top 5 Recommended Products")
-for p, pr in top5:
-    st.write(f"{p}: {pr:.2%}")
+        # Get Top 5 products
+        top5_idx = np.argsort(-probs)[:5]
+        top5 = [(product_cols[i], probs[i]) for i in top5_idx]
 
+        # Display results
+        st.subheader("Top 5 Recommended Products")
 
-labels = [p for p, _ in top5][::-1]
-values = [v * 100 for _, v in top5][::-1]
+        for p, pr in top5:
+            st.write(f"{p}: {pr:.2%}")
 
-fig, ax = plt.subplots()
-ax.barh(labels, values)
-ax.set_xlabel("Probability (%)")
-ax.set_title("Top 5 Insurance Recommendations")
+        # Plot chart
+        labels = [p for p, _ in top5][::-1]
+        values = [v * 100 for _, v in top5][::-1]
 
-st.pyplot(fig)
+        fig, ax = plt.subplots()
+        ax.barh(labels, values)
+        ax.set_xlabel("Probability (%)")
+        ax.set_title("Top 5 Insurance Recommendations")
+
+        st.pyplot(fig)
+
+    except Exception:
+        st.error("⚠️ Something went wrong while generating recommendations.")
+
 
 
